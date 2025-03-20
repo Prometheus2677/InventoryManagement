@@ -1,8 +1,26 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+using OrderService.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+// Add services to the container.
+builder.Services.AddDbContext<OrderDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddControllers();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Inventory Producer",
+        Version = "v1",
+        Description = "Inventory Producer API using OpenAPI",
+    });
+});
 
 var app = builder.Build();
 
@@ -14,6 +32,15 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Inventory Producer");
+        c.RoutePrefix = string.Empty; // Swagger UI at root URL
+    });
+}
 var summaries = new[]
 {
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
